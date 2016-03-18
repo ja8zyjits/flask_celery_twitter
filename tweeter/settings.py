@@ -18,5 +18,5 @@ else:
     login_disabled = False
     backend_db = 'sqlite:////home/ja8zyjits/project/turbo_labs/production.db'
 
-
+celery_broker = 'sqla+sqlite:////home/ja8zyjits/project/turbo_labs/celery_broker.db'
 

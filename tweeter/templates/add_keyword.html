@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>KeyWords</title>
+</head>
+<body>
+<div>
+	{% for key_word in key_words %}
+		<p>#{{key_word}}</p>
+	{% endfor %}
+</div>
+<form method="post" action="{{url_for('add_keyword')}}">
+<input type='hidden' name='csrf_token' id='csrf_token' value='{{csrf_token()}}'>
+{{form.streams.label}}:{{form.streams}}
+<br/><span>{{form.streams.errors[0]}}</span>
+<br/><input type="Submit" value="Add KeyWord">
+</form>
+</body>
+</html>
