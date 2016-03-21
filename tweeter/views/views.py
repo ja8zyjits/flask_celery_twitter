@@ -1,10 +1,11 @@
 from flask import request, url_for, render_template, redirect
 
 from tweeter import application
-from tweeter.models import KeyWords, db
+from tweeter.models import KeyWords, db, Tweets
 from tweeter.views.forms import AddKeyWordForm
 from celery import group
-from tweeter.views.celery_tasks import stream_tweets, save_tweets
+from tweeter.views.celery_tasks import stream_tweets
+from dateutil.parser import parse as date_parser
 
 @application.route("/")
 def index():
@@ -17,6 +18,7 @@ def add_keyword():
     if request.method == 'POST':
         if keyword_form.validate_on_submit():
             new_keyword()
+            TweeterTask.reset_celery()
             return redirect(url_for('add_keyword'))
     return render_template("add_keyword.html", form=keyword_form, key_words=key_words)
 
@@ -46,7 +48,7 @@ class TweeterTask():
 
     @staticmethod
     def start_tasks():
-        tasks = group(stream_tweets.s(keyword) for keyword in get_active_keywords())
+        tasks = group(stream_tweets.s(keyword.streams) for keyword in get_active_keywords())
         TweeterTask.job = tasks.apply_async()
 
 def get_active_keywords():
@@ -54,8 +56,20 @@ def get_active_keywords():
 
 def update_tweets(key_word, tweet, user, generated_time):
     key_word_id = get_key_word_id(key_word)
-    
+    insert_tweets(key_word_id, tweet, user, generated_time)
 
 def get_key_word_id(keyword):
-    key_word = KeyWords.query.filter(KeyWords.stream == keyword).first()
+    key_word = KeyWords.query.filter(KeyWords.streams == keyword).first()
     return key_word.id
+
+def insert_tweets(key_word_id, tweet, user, generated_time):
+    try:
+        tweet = Tweets()
+        tweet.keywords_id = key_word_id
+        tweet.tweet = str(tweet)
+        tweet.twitter_user = user
+        tweet.tweet_generated_time = date_parser(generated_time)
+        db.session.add(tweet)
+        db.session.commit()
+    except Exception, e:
+        return False

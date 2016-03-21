@@ -1,1 +1,1 @@
-from tweeter.views import forms, views
+from tweeter.views import forms, views, admin_views

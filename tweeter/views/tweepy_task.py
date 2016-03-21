@@ -1,14 +1,15 @@
-from tweepy import StreamListener, OAuthHandler, Stream
 import json
+from tweepy import StreamListener, OAuthHandler, Stream
 
-ckey = "05e8fDRy7MR90tRRYKvyR03f7"
-csecret = "KYqF4j2LkZkjFSnCC1zyjpo4pACIMKryI0XqB64sfGVbqKcFPu"
+ckey = "Z30OWOsTk80mRS17J4w2sGPZl"
+csecret = "ljRQphsoO7c030nCss4iPgPFRIFQuumM2PAHLVvAVZrr7SFNuF"
 
-atoken = "4753351087-TUiLK8DJ3Iettlu4Z1uTxqCKzteRFVhEjLFd7cv"
-asecret = "uIZYdyBlOTwPLQPpVFFJSyzwmP7lp0w5LhgWIQMNqmBkN"
+atoken = "4753351087-Ofzx5ikg1CCz0bx7m5CKjT2q7NFdSRkj1X9MpZ0"
+asecret = "T5bJXWpv9xHheQ6begRMmOtGfkVB1p2QddM66DJ7GW4jK"
 
 auth = OAuthHandler(ckey, csecret)
 auth.set_access_token(atoken, asecret)
+
 
 class MyStreamer(StreamListener):
 
@@ -21,16 +22,30 @@ class MyStreamer(StreamListener):
         tweet = all_data['text']
         username = all_data["user"]["screen_name"]
         tweet_generated_at = all_data["created_at"]
-        print tweet, "####", username, "####", tweet_generated_at, self.key_word, '\n'
+        self.update_db(self.key_word, tweet, username, tweet_generated_at)
+        # print tweet, '####', username, '#####', tweet_generated_at, "###3", self.key_word
+        print tweet,"tweet"
         return True
     
     def on_error(self, status):
         print status
         return False
 
-listener = MyStreamer()
-listener.key_word = "kohli pakistan"
+    def update_db(self, key_word, tweet, user, generated_time):
+        from tweeter.views.views import update_tweets
+        update_tweets(key_word, tweet, user, generated_time)
 
-myst =  Stream(auth=auth, listener=listener)
 
-myst.filter(track=["kohli","pakistan"])
+
+# listener = MyStreamer()
+# listener.key_word = "kohli pakistan"
+
+# myst =  Stream(auth=auth, listener=listener)
+
+# myst.filter(track=["kohli","pakistan"])
+
+def create_streamer(key_words):
+    listener = MyStreamer()
+    listener.key_word = key_words
+    myst = Stream(auth=auth, listener=listener)
+    return myst

@@ -41,8 +41,8 @@ class Tweets(db.Model, BaseModel):
 
     key_words = db.relationship('KeyWords', backref=db.backref('tweets', lazy='dynamic'))
 
-    def __init__(self, user, tweet):
-        self.streams = streams
+    # def __init__(self, user, tweet):
+    #     self.streams = streams
 
     def __repr__(self):
-        return "%s" % self.streams
+        return "%s" % self.twitter_user
