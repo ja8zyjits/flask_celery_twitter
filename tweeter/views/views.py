@@ -64,12 +64,12 @@ def get_key_word_id(keyword):
 
 def insert_tweets(key_word_id, tweet, user, generated_time):
     try:
-        tweet = Tweets()
-        tweet.keywords_id = key_word_id
-        tweet.tweet = str(tweet)
-        tweet.twitter_user = user
-        tweet.tweet_generated_time = date_parser(generated_time)
-        db.session.add(tweet)
+        tweets = Tweets()
+        tweets.keywords_id = key_word_id
+        tweets.tweet = str(tweet)
+        tweets.twitter_user = user
+        tweets.tweet_generated_time = date_parser(generated_time)
+        db.session.add(tweets)
         db.session.commit()
     except Exception, e:
         return False
