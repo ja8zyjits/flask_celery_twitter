@@ -35,6 +35,7 @@ class Tweets(db.Model, BaseModel):
     id = db.Column(db.Integer, primary_key=True)
     keywords_id = db.Column(db.Integer, db.ForeignKey('key_words.id'))
 
+    tweet_generated_time = db.Column(db.DateTime())
     twitter_user = db.Column(db.String(100))
     tweet = db.Column(db.Text)
 

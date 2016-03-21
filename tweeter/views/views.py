@@ -3,6 +3,8 @@ from flask import request, url_for, render_template, redirect
 from tweeter import application
 from tweeter.models import KeyWords, db
 from tweeter.views.forms import AddKeyWordForm
+from celery import group
+from tweeter.views.celery_tasks import stream_tweets, save_tweets
 
 @application.route("/")
 def index():
@@ -29,3 +31,31 @@ def new_keyword():
     except Exception, e:
         return True
 
+class TweeterTask():
+    job = None
+    
+    @staticmethod
+    def reset_celery():
+        if TweeterTask.job:
+            TweeterTask.stop_tasks()
+        TweeterTask.start_tasks()
+
+    @staticmethod
+    def stop_tasks():
+        TweeterTask.job.revoke(terminate=True)
+
+    @staticmethod
+    def start_tasks():
+        tasks = group(stream_tweets.s(keyword) for keyword in get_active_keywords())
+        TweeterTask.job = tasks.apply_async()
+
+def get_active_keywords():
+    return KeyWords.query.filter(KeyWords.active == True)
+
+def update_tweets(key_word, tweet, user, generated_time):
+    key_word_id = get_key_word_id(key_word)
+    
+
+def get_key_word_id(keyword):
+    key_word = KeyWords.query.filter(KeyWords.stream == keyword).first()
+    return key_word.id
