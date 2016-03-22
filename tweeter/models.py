@@ -1,3 +1,5 @@
+"""The db table definition module"""
+
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from tweeter import application

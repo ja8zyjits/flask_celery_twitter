@@ -1,4 +1,4 @@
-
+"""The module where we change the configuration values"""
 testing = False
 
 debug = True

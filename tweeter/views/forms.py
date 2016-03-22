@@ -1,3 +1,4 @@
+""" The module used to define various forms """
 from flask_wtf import CsrfProtect, Form
 from wtforms import StringField, validators
 from tweeter import application

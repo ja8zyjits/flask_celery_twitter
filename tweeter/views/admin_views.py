@@ -1,7 +1,7 @@
-from tweeter import application
+"""The admin interface to look up the db"""
+from tweeter import application, models
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
-from tweeter import models
 
 
 admin = Admin(application, name='Tweeeter', template_mode="bootstrap3")

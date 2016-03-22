@@ -1,3 +1,5 @@
+"""The basic confiuration of the applications and other plugins"""
+
 from tweeter import application
 from tweeter.settings import debug, session_type, secret_key, backend_db,\
 testing, server_name, login_disabled, image_destination, celery_broker
