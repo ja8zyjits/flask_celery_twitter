@@ -27,7 +27,7 @@ Just follow these basic steps to start the server in *development mode*.
 
 4. Run the celery worker
 
-                python -A tweeter.views.flask_tasks worker
+		python -A tweeter.views.flask_tasks worker
 
 5. Open the browser and go to http://127.0.0.1:5000/add_keyword
 
@@ -49,7 +49,66 @@ Just follow these basic steps to start the server in *development mode*.
 
 - [x] While using multiple processors parallely and trying to stream, the twitter may return 420 rate limiting error, but further it doesn't respond, it happens only initially
 
-- [ ] [flask-sqlalchemy](http://flask-sqlalchemy.pocoo.org/2.1/)  creates only a single scope per request and they cannot be shared properly accross multiple processes, this leads to partial db update i.e only one process of celery updates the db and others dont.
+- [x] [flask-sqlalchemy](http://flask-sqlalchemy.pocoo.org/2.1/)  creates only a single scope per request and they cannot be shared properly accross multiple processes, this leads to partial db update i.e only one process of celery updates the db and others dont.
+
+- [ ] Stopping an executing tasks in celery is not working, tried 
+
+		resultset.revoke(terminate=True)
+
+	This dint fire any error but failed to stop the tasks. Later I tried
+
+		revoke(resultset.children[0].id, terminate=True)
+
+	This fired an error Socket Error[111] connection refused
+
+	```python
+		Traceback (most recent call last):
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/flask/app.py", line 1836, in __call__
+		    return self.wsgi_app(environ, start_response)
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/flask/app.py", line 1820, in wsgi_app
+		    response = self.make_response(self.handle_exception(e))
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/flask/app.py", line 1403, in handle_exception
+		    reraise(exc_type, exc_value, tb)
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/flask/app.py", line 1817, in wsgi_app
+		    response = self.full_dispatch_request()
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/flask/app.py", line 1477, in full_dispatch_request
+		    rv = self.handle_user_exception(e)
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/flask/app.py", line 1381, in handle_user_exception
+		    reraise(exc_type, exc_value, tb)
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/flask/app.py", line 1475, in full_dispatch_request
+		    rv = self.dispatch_request()
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/flask/app.py", line 1461, in dispatch_request
+		    return self.view_functions[rule.endpoint](**req.view_args)
+		  File "/home/ja8zyjits/project/turbo_labs/twitter_app/tweeter/views/views.py", line 45, in stop_celery
+		    TweeterTask.stop_tasks()
+		  File "/home/ja8zyjits/project/turbo_labs/twitter_app/tweeter/views/views.py", line 63, in stop_tasks
+		    revoke(tasks.id, terminate=True)
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/celery/local.py", line 188, in __call__
+		    return self._get_current_object()(*a, **kw)
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/celery/app/control.py", line 172, in revoke
+		    'signal': signal}, **kwargs)
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/celery/app/control.py", line 316, in broadcast
+		    limit, callback, channel=channel,
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/kombu/pidbox.py", line 283, in _broadcast
+		    chan = channel or self.connection.default_channel
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/kombu/connection.py", line 757, in default_channel
+		    self.connection
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/kombu/connection.py", line 742, in connection
+		    self._connection = self._establish_connection()
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/kombu/connection.py", line 697, in _establish_connection
+		    conn = self.transport.establish_connection()
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/kombu/transport/pyamqp.py", line 116, in establish_connection
+		    conn = self.Connection(**opts)
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/amqp/connection.py", line 165, in __init__
+		    self.transport = self.Transport(host, connect_timeout, ssl)
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/amqp/connection.py", line 186, in Transport
+		    return create_transport(host, connect_timeout, ssl)
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/amqp/transport.py", line 299, in create_transport
+		    return TCPTransport(host, connect_timeout)
+		  File "/home/ja8zyjits/project/turbo_labs/lib/python2.7/site-packages/amqp/transport.py", line 95, in __init__
+		    raise socket.error(last_err)
+		error: [Errno 111] Connection refused
+	```
 
 #### [Future](#markdown-header-future)
 ----

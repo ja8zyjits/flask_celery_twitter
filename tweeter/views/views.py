@@ -6,6 +6,7 @@ from tweeter import application
 from tweeter.models import KeyWords, db, Tweets
 from tweeter.views.forms import AddKeyWordForm
 from celery import group
+from celery.task.control import revoke
 from tweeter.views.celery_tasks import stream_tweets
 from dateutil.parser import parse as date_parser
 
@@ -38,6 +39,12 @@ def new_keyword():
     except Exception, e:
         return True
 
+@application.route('/stop_celery')
+def stop_celery():
+    if TweeterTask.job:
+        TweeterTask.stop_tasks()
+    return redirect(url_for('add_keyword'))
+
 class TweeterTask():
     """Dummy class to keep related functions and variables in an organized manner"""
     job = None #The variable used to track the celery group tasks
@@ -52,7 +59,8 @@ class TweeterTask():
     @staticmethod
     def stop_tasks():
         """ stops the group tasks """
-        TweeterTask.job.revoke(terminate=True)
+        for tasks in TweeterTask.job.children:
+            revoke(tasks.id, terminate=True)
 
     @staticmethod
     def start_tasks():
@@ -64,26 +72,38 @@ def get_active_keywords():
     """ queries the keywords that are not deleted/deactivated """
     return KeyWords.query.filter(KeyWords.active == True)
 
-def update_tweets(key_word, tweet, user, generated_time):
-    """updates the tweets streamed into the database"""
-    key_word_id = get_key_word_id(key_word)
-    insert_tweets(key_word_id, tweet, user, generated_time)
+def update_tweets(session_obj, key_word, tweet, user, generated_time):
+    """
+    updates the tweets streamed into the database
+    :param session_obj: A new scoped session object used to support mutliple
+     transactions with sqlalchemy and multiprocess
+    """
+    key_word_id = get_key_word_id(session_obj, key_word)
+    insert_tweets(session_obj, key_word_id, tweet, user, generated_time)
 
-def get_key_word_id(keyword):
-    """ gets the id of the keyword """
-    key_word = KeyWords.query.filter(KeyWords.streams == keyword).first()
+def get_key_word_id(session_obj, keyword):
+    """
+     gets the id of the keyword 
+     :param session_obj: A new scoped session object used to support mutliple
+     transactions with sqlalchemy and multiprocess
+     """
+    key_word = session_obj.query(KeyWords).filter(KeyWords.streams == keyword).first()
     return key_word.id
 
-def insert_tweets(key_word_id, tweet, user, generated_time):
-    """ Inserts a new tweet into the db mapping a foreign key to the
-     keywords table with key_woord_id"""
+def insert_tweets(session_obj, key_word_id, tweet, user, generated_time):
+    """ 
+    Inserts a new tweet into the db mapping a foreign key to the
+     keywords table with key_woord_id
+     :param session_obj: A new scoped session object used to support mutliple
+     transactions with sqlalchemy and multiprocess
+     """
     try:
         tweets = Tweets()
         tweets.keywords_id = key_word_id
-        tweets.tweet = str(tweet)
+        tweets.tweet = tweet
         tweets.twitter_user = user
         tweets.tweet_generated_time = date_parser(generated_time)
-        db.session.add(tweets)
-        db.session.commit()
+        session_obj.add(tweets)
+        session_obj.commit()
     except Exception, e:
         return False

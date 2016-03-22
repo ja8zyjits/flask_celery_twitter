@@ -29,7 +29,7 @@ class MyStreamer(StreamListener):
         tweet_generated_at = all_data["created_at"]
         self.update_db(self.key_word, tweet, username, tweet_generated_at)
         # print tweet, '####', username, '#####', tweet_generated_at, "###3", self.key_word
-        # print tweet,"tweet"
+        print tweet+"####tweet"
         return True
     
     def on_error(self, status):
@@ -39,7 +39,8 @@ class MyStreamer(StreamListener):
     def update_db(self, key_word, tweet, user, generated_time):
         """updates the db when a new tweet arrives"""
         from tweeter.views.views import update_tweets
-        update_tweets(key_word, tweet, user, generated_time)
+        with ScopedSql() as session_obj:
+            update_tweets(session_obj, key_word, tweet, user, generated_time)
 
 class ScopedSql():
     """The context for thread safe sqlalchemy session"""
