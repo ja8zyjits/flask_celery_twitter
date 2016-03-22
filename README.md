@@ -25,7 +25,25 @@ Just follow these basic steps to start the server in *development mode*.
 
 		python run_application.py
 
-4. Open the browser and go to http://127.0.0.1:5000/add_keyword
+4. Run the celery worker
+
+                python -A tweeter.views.flask_tasks worker
+
+5. Open the browser and go to http://127.0.0.1:5000/add_keyword
+
+#### [Methodology](#markdown-header-methodology)
+----
+
+1. The basic request handle is handled by flask
+
+2. To perform twitter streaming we use tweepy library.
+
+3. We use celery to initiate the api using all the cpus/processors and doing parallel api requesting.
+
+4. Sqlalchemy is used to communicate with db.
+
+#### [Problems](#markdown-header-problems)
+----
 
 #### [Contributors](#markdown-header-contributors)
 ----
