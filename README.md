@@ -1,6 +1,6 @@
 # [TWITTERAPP](#markdown-header-twitterapp)
 
-Twitter App is a multiprocess architectured twitter streaming api user that can read multiple streams and update the details into the db. Primarily based on [flask](http://flask.pocoo.org/) behind a tornado container for asynchronous connection.
+Twitter App is a multiprocess architectured twitter streaming api user that can read multiple streams and update the details into the db. Primarily based on [flask](http://flask.pocoo.org/) behind a [tornado](http://www.tornadoweb.org/en/stable/) container for asynchronous connection along with [celery](http://docs.celeryproject.org/en/latest/) for job distribution, [tweepy](http://www.tweepy.org/) for twitter api and [flask-sqlalchemy](http://flask-sqlalchemy.pocoo.org/2.1/) for database connection. We use a simple sqllite database for running this app, we can use another database too by changing the url in tweeter/settings.py .
 
 #### [Features](#markdown-header-features)
 ----
@@ -44,6 +44,18 @@ Just follow these basic steps to start the server in *development mode*.
 
 #### [Problems](#markdown-header-problems)
 ----
+
+- [x] The timestamp of the system and the local network timestamp should be same or else you may get 401 error form the twitter network, it took me a while to realize that it was the time stamp and not the api keys that resulted in 401 authentication error
+
+- [x] While using multiple processors parallely and trying to stream, the twitter may return 420 rate limiting error, but further it doesn't respond, it happens only initially
+
+- [ ] [flask-sqlalchemy](http://flask-sqlalchemy.pocoo.org/2.1/)  creates only a single scope per request and they cannot be shared properly accross multiple processes, this leads to partial db update i.e only one process of celery updates the db and others dont.
+
+#### [Future](#markdown-header-future)
+----
+
+- [ ] Need to add views for capturing statistics about the tweets of each keyword
+- [ ] Need to use tornado broadcast to post everytime a new tweet arrives from the stream to the front-end
 
 #### [Contributors](#markdown-header-contributors)
 ----
