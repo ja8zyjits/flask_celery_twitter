@@ -51,7 +51,7 @@ Just follow these basic steps to start the server in *development mode*.
 
 - [x] [flask-sqlalchemy](http://flask-sqlalchemy.pocoo.org/2.1/)  creates only a single scope per request and they cannot be shared properly accross multiple processes, this leads to partial db update i.e only one process of celery updates the db and others dont.
 
-- [ ] Stopping an executing tasks in celery is not working, tried 
+- [x] Stopping an executing tasks in celery is not working, tried 
 
 		resultset.revoke(terminate=True)
 
@@ -109,6 +109,8 @@ Just follow these basic steps to start the server in *development mode*.
 		    raise socket.error(last_err)
 		error: [Errno 111] Connection refused
 	```
+
+- [ ] The celery control cannot revoke a task with sqlalchemy as broker. Need to find another way to revoke tasks.
 
 #### [Future](#markdown-header-future)
 ----
