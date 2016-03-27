@@ -1,20 +1,19 @@
-<!DOCTYPE html>
-<html>
-<head>
-	<title>KeyWords</title>
-</head>
-<body>
-<div>
+{% extends 'base.html'%}
+{% block body %}
+<div class="row">
 	{% for key_word in key_words %}
-		<p>#{{key_word}}</p>
+		<p>{{key_word}}</p>
 	{% endfor %}
 </div>
+<div class="row">
 <form method="post" action="{{url_for('add_keyword')}}">
 <input type='hidden' name='csrf_token' id='csrf_token' value='{{csrf_token()}}'>
 {{form.streams.label}}:{{form.streams}}
 <br/><span>{{form.streams.errors[0]}}</span>
-<br/><input type="Submit" value="Add KeyWord">
+<br/><input class='btn btn-primary' type="Submit" value="Add KeyWord">
 </form>
+</div>
+<div class="row">
 <a href="{{url_for('stop_celery')}}">Stop Api</a>
-</body>
-</html>
+</div>
+{% endblock %}

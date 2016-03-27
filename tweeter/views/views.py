@@ -6,7 +6,6 @@ from tweeter import application
 from tweeter.models import KeyWords, db, Tweets
 from tweeter.views.forms import AddKeyWordForm
 from celery import group
-from celery.task.control import revoke
 from tweeter.views.celery_tasks import stream_tweets
 from dateutil.parser import parse as date_parser
 
@@ -41,8 +40,7 @@ def new_keyword():
 
 @application.route('/stop_celery')
 def stop_celery():
-    if TweeterTask.job:
-        TweeterTask.stop_tasks()
+    TweeterTask.stop_tasks()
     return redirect(url_for('add_keyword'))
 
 class TweeterTask():
@@ -52,15 +50,15 @@ class TweeterTask():
     @staticmethod
     def reset_celery():
         """ stops and restarts the celery tasks """
-        if TweeterTask.job:
-            TweeterTask.stop_tasks()
+        TweeterTask.stop_tasks()
         TweeterTask.start_tasks()
 
     @staticmethod
     def stop_tasks():
         """ stops the group tasks """
-        for tasks in TweeterTask.job.children:
-            revoke(tasks.id, terminate=True)
+        if TweeterTask.job:
+            for tasks in TweeterTask.job.children:
+                tasks.revoke(terminate=True)
 
     @staticmethod
     def start_tasks():
