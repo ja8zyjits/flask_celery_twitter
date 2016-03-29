@@ -1,12 +1,12 @@
 """The db interaction and request processing module"""
 
-from flask import request, url_for, render_template, redirect
+from flask import request, url_for, render_template, redirect, abort
 
 from tweeter import application
 from tweeter.models import KeyWords, db, Tweets
-from tweeter.views.forms import AddKeyWordForm
-from celery import group
+from tweeter.views.forms import AddKeyWordForm, EditKeyWordForm, StatisticsForm
 from tweeter.views.celery_tasks import stream_tweets
+from celery import group
 from dateutil.parser import parse as date_parser
 
 @application.route("/")
@@ -14,17 +14,21 @@ def index():
     """landing page"""
     return "Success"
 
-@application.route('/add_keyword', methods=['GET', 'POST'])
-def add_keyword():
+@application.route('/add', methods=['GET', 'POST'])
+def add():
     """ verifies and adds new keywords to the KeyWords table by calling new_keyword() method """
     keyword_form = AddKeyWordForm()
-    key_words = KeyWords.query.all()
+    key_words = get_active_keywords()
     if request.method == 'POST':
         if keyword_form.validate_on_submit():
             new_keyword()
             TweeterTask.reset_celery()
-            return redirect(url_for('add_keyword'))
+            return redirect(url_for('add'))
     return render_template("add_keyword.html", form=keyword_form, key_words=key_words)
+
+def get_active_keywords():
+    """ queries the keywords that are not deleted/deactivated """
+    return KeyWords.query.filter(KeyWords.active == True)
 
 def new_keyword():
     """ The function that adds the keyword to the db """
@@ -37,11 +41,6 @@ def new_keyword():
         return True
     except Exception, e:
         return True
-
-@application.route('/stop_celery')
-def stop_celery():
-    TweeterTask.stop_tasks()
-    return redirect(url_for('add_keyword'))
 
 class TweeterTask():
     """Dummy class to keep related functions and variables in an organized manner"""
@@ -66,9 +65,90 @@ class TweeterTask():
         tasks = group(stream_tweets.s(keyword.streams) for keyword in get_active_keywords())
         TweeterTask.job = tasks.apply_async()
 
-def get_active_keywords():
-    """ queries the keywords that are not deleted/deactivated """
-    return KeyWords.query.filter(KeyWords.active == True)
+@application.route('/stop_celery')
+def stop_celery():
+    TweeterTask.stop_tasks()
+    return redirect(url_for('add'))
+
+@application.route('/edit/<int:keyword_id>', methods=['GET', 'POST'])
+def edit(keyword_id):
+    """edit handler for the app"""
+    try:
+        keyword_obj = get_obj(KeyWords, keyword_id)
+        if request.method == 'POST':
+            keyword_form = EditKeyWordForm()
+            if keyword_form.validate_on_submit():
+                keyword_form.populate_obj(keyword_obj)
+                status = save_obj(keyword_obj)
+                if status:
+                    return redirect(url_for('add'))
+                else:
+                    raise ValueError
+        else:
+            keyword_form = EditKeyWordForm(obj=keyword_obj)
+    except ValueError:
+        abort(404)
+    else:
+        return render_template('edit_keyword.html', form=keyword_form)
+
+
+def get_obj(obj_class, obj_id):
+    """gets the keyword_obj of a particular id from the db"""
+    obj = obj_class.query.get(obj_id)
+    if obj:
+        return obj
+    else:
+        raise ValueError
+
+def save_obj(obj):
+    """saves an object"""
+    try:
+        db.session.add(obj)
+        db.session.commit()
+    except Exception, e:
+        return False
+    else:
+        return True
+
+@application.route('/delete', methods=['POST', 'GET'])
+def delete():
+    """ initiates the delete flag set on a keyword"""
+    try:
+        if request.method == 'POST':
+            keyword_form = EditKeyWordForm()
+            if keyword_form.validate_on_submit():
+                keyword_obj = get_obj(KeyWords, keyword_form.id.data)
+                status = delete_obj(keyword_obj)
+
+                if not status:
+                    raise ValueError
+    except ValueError:
+        abort(404)
+    else:
+        return redirect(url_for('add'))
+
+def delete_obj(obj):
+    """ sets the delete flag of a object """
+    try:
+        obj.active = False
+        db.session.add(obj)
+        db.session.commit()
+    except Exception:
+        return False
+    else:
+        return True
+
+@application.route('/show_stats/<int:keyword_id>')
+def show_stats(keyword_id):
+    try:
+        if request.method == 'POST':
+            form = StatisticsForm()
+        keyword_obj = get_obj(KeyWords, keyword_id)
+        form = StatisticsForm(obj=keyword_obj)
+        return render_template('statistics.html', form=form)
+
+    except Exception, e:
+        abort(404)
 
 def update_tweets(session_obj, key_word, tweet, user, generated_time):
     """
@@ -105,3 +185,4 @@ def insert_tweets(session_obj, key_word_id, tweet, user, generated_time):
         session_obj.commit()
     except Exception, e:
         return False
+

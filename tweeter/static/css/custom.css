@@ -1,0 +1,10 @@
+.row.border-row{
+    border: 1px solid #CECBCB;
+    padding: 10px;
+}
+
+.row .key-word{
+    padding: 10px;
+    background-color: #CECBCB; 
+    margin: 0px 5px;
+}

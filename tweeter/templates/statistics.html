@@ -1,0 +1,28 @@
+{% extends 'base.html'%}
+{% block styles %}
+    {{super()}}
+    <link rel='stylesheet' href="{{url_for('static', filename='css/timepicker.css')}}" />
+{% endblock %}
+{% block body %}
+<div class="row border-row">
+    <form method="post" action="{{url_for('edit', keyword_id=form.id.data)}}">
+        <input type='hidden' name='csrf_token' id='csrf_token' value='{{csrf_token()}}'>
+        {{form.id}}
+        {{form.streams.label}}:{{form.streams}}
+        <span>{{form.streams.errors[0]}}</span>
+        <span>From Time</span><input type='text' name='from_time' id='from_time' class='timefield'></input>
+        <span>To Time</span><input type='text' name='to_time' id='to_time' class='timefield'></input>
+        <br/><input class='btn btn-primary' type="Submit" value="Edit Keyword">
+        <a href="{{url_for('add')}}" class="btn btn-primary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
+{% block scripts %}
+{{super()}}
+<script src="{{url_for('static', filename='js/timepicker.min.js')}}"></script>
+<script type="text/javascript">
+    $('.timefield').timepicker({
+        'timeFormat':'H:i'
+    });
+</script>
+{% endblock %}

@@ -5,12 +5,15 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<title></title>
+	{% block styles %}
 	<link rel="stylesheet" type="text/css" href="{{url_for('static', filename='css/bootstrap.min.css')}}">
 	<link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap-theme.min.css')}}" type="text/css" />
 	<!-- Custom styles for this template -->
 	<link rel="stylesheet" href="{{url_for('static', filename='css/jquery-ui.css')}}"/>
 	<link rel="stylesheet" href="{{url_for('static', filename='css/font-awesome.min.css')}}" media="all" type="text/css"/>
 	<link rel="stylesheet" href="{{url_for('static', filename='css/bootstrap-social.css')}}" type="text/css" />
+	<link rel="stylesheet" href="{{url_for('static', filename='css/custom.css')}}" type="text/css" />
+	{% endblock %}
 	<!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
 	<!--[if lt IE 9]>
 	<script type="text/javascript" src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
@@ -25,7 +28,9 @@
 <!-- Bootstrap core JavaScript
 ================================================== -->
 <!-- Placed at the end of the document so the pages load faster -->
+{% block scripts %}
 <script type="text/javascript" src="{{url_for('static', filename='js/jquery.min.js')}}"></script>
 <script type="text/javascript" src="{{url_for('static', filename='js/bootstrap.min.js')}}"></script>
+{% endblock %}
 </body>
 </html>

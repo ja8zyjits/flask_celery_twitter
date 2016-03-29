@@ -1,16 +1,22 @@
 {% extends 'base.html'%}
 {% block body %}
-<div class="row">
+<div class="row border-row">
+	<h2>Add Keywords</h2>
+</div>
+<div class="row border-row">
 	{% for key_word in key_words %}
-		<p>{{key_word}}</p>
+		<div class='pull-left key-word'><a href="{{url_for('show_stats', keyword_id=key_word.id)}}">{{key_word}}</a>
+		<a href="{{url_for('edit', keyword_id=key_word.id)}}"><span class="glyphicon glyphicon-pencil"></span></a>
+		</div>
 	{% endfor %}
 </div>
-<div class="row">
-<form method="post" action="{{url_for('add_keyword')}}">
+<div class="row border-row">
+<form method="post" action="{{url_for('add')}}">
 <input type='hidden' name='csrf_token' id='csrf_token' value='{{csrf_token()}}'>
 {{form.streams.label}}:{{form.streams}}
 <br/><span>{{form.streams.errors[0]}}</span>
 <br/><input class='btn btn-primary' type="Submit" value="Add KeyWord">
+<a href="{{url_for('add')}}" class="btn btn-primary">Cancel</a>
 </form>
 </div>
 <div class="row">

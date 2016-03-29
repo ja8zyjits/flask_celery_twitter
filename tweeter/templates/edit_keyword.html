@@ -1,0 +1,22 @@
+{% extends 'base.html'%}
+{% block body %}
+<div class="row border-row">
+	<h2>Edit Keywords</h2>
+</div>
+<div class="row border-row">
+	<form method="post" action="{{url_for('edit', keyword_id=form.id.data)}}">
+		<input type='hidden' name='csrf_token' id='csrf_token' value='{{csrf_token()}}'>
+		{{form.id}}
+		{{form.streams.label}}:{{form.streams}}
+		<br/><span>{{form.streams.errors[0]}}</span>
+		<br/><input class='btn btn-primary' type="Submit" value="Edit Keyword">
+		<a href="{{url_for('add')}}" class="btn btn-primary">Cancel</a>
+	</form>
+	<form method="post" action="{{url_for('delete')}}">
+		<input type='hidden' name='csrf_token' id='csrf_token' value='{{csrf_token()}}'>
+		{{form.id}}
+		<input type='hidden' name='streams' id='streams' value='{{form.streams.data}}'>
+		<input class='btn btn-danger' type="Submit" value="Delete Keyword">
+	</form>
+</div>
+{% endblock %}
